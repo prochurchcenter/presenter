@@ -1,18 +1,27 @@
-import { Button } from "@/components/ui/button"
+import { RouterProvider, createBrowserRouter } from "react-router-dom"
+import Layout from "@renderer/components/Layout"
+import { Home } from "@renderer/pages/Home"
+import { Settings } from "@renderer/pages/Settings"
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: <Home />
+      },
+      {
+        path: "settings",
+        element: <Settings />
+      }
+    ]
+  }
+])
 
 function App(): JSX.Element {
-  const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
-
-  return (
-    <>
-      <h1 className="text-3xl font-bold underline">
-        Hello world!
-      </h1>
-      <Button onClick={
-        ipcHandle
-      } >Click me</Button>
-    </>
-  )
+  return <RouterProvider router={router} />
 }
 
 export default App

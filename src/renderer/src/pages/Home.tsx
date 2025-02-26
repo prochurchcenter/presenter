@@ -1,15 +1,38 @@
-import { Button } from "@renderer/components/ui/button"
-import { Link } from "react-router-dom"
+import { useServiceStore } from "@renderer/store/useServiceStore"
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core'
+import {
+    sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable'
+import { LyricsItem } from "@renderer/components/lyrics-item"
+
 
 export function Home() {
-    const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
+    const { item } = useServiceStore()
 
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    )
 
     return (
-        <div>
-            <h1 className="text-primary text-3xl font-bold mb-4">Home</h1>
-            <Link to="/settings">   <Button onClick={ipcHandle}>Go to settings </Button></Link>
-
+        <div className="p-4">
+            <DndContext
+                key={item.id}
+                sensors={sensors}
+                collisionDetection={closestCenter}
+            >
+                <LyricsItem item={item} />
+            </DndContext>
         </div>
     )
 }

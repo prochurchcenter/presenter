@@ -1,6 +1,7 @@
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { ContentType } from "@renderer/types/service"
+import { useServiceStore } from "@renderer/store/useServiceStore"
 import { Card, CardContent, CardHeader, CardTitle } from "@renderer/components/ui/card"
 import { GripVertical, Copy } from "lucide-react"
 
@@ -24,6 +25,8 @@ export function DraggableLyric({ content }: DraggableLyricProps) {
             type: content.type
         }
     })
+
+    const { setCurrentItem } = useServiceStore()
 
     const getBorderColor = () => {
         switch (content.type) {
@@ -50,7 +53,10 @@ export function DraggableLyric({ content }: DraggableLyricProps) {
 
     return (
         <div ref={setNodeRef} style={style} {...attributes}>
-            <Card className={`relative bg-card rounded-none before:absolute before:left-0 before:top-0 before:h-full before:w-[4px] ${getBorderColor()}`}>
+            <Card
+                className={`relative bg-card rounded-none before:absolute before:left-0 before:top-0 before:h-full before:w-[4px] ${getBorderColor()}`}
+                onClick={() => setCurrentItem(content)}
+            >
                 <CardHeader className="flex flex-row items-center justify-between py-2 px-4">
                     <CardTitle className="text-sm text-muted-primary uppercase tracking-wider">
                         {content.type}

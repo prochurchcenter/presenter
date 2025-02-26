@@ -18,6 +18,7 @@ import {
 import { CollapsableItems } from "@/components/collapsable-items"
 import { useNavigate } from "react-router-dom"
 import { useServiceStore } from "@renderer/store/useServiceStore"
+import { NotesSection } from './notes-section'
 
 
 // This is sample data
@@ -154,6 +155,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarGroupContent>
                             <CollapsableItems
                                 service={items}
+                            />
+                            <NotesSection
+                                notes={items?.[0]?.notes || ''}
+                                onNotesChange={(newNotes) => {
+                                    // Handle notes update through your store
+                                    console.log('Notes updated:', newNotes)
+                                }}
                             />
                         </SidebarGroupContent>
                     </SidebarGroup>

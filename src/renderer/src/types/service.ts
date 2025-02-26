@@ -15,7 +15,7 @@ interface BackgroundSettings {
     videoSpeed: number;
     videoMuted: boolean;
     background: BackgroundSettings;
-    textAlign: string;
+    textAlign:  "left" | "center" | "right" | undefined;
   }
   
   // Content Types for Presentations and Songs

@@ -1,4 +1,5 @@
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
+import { SidebarRight } from "@/components/sidebar-right"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
     Breadcrumb,
@@ -44,6 +45,7 @@ export default function Layout() {
                     <Outlet />
                 </div>
             </SidebarInset>
+            <SidebarRight />
         </SidebarProvider>
     )
 }

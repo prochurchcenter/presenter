@@ -4,10 +4,10 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 function createWindow(): void {
-  // Create the browser window.
+  // Create the main window
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1280,
+    height: 720,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
@@ -17,25 +17,72 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+  // Create presenter window
+  const presenterWindow = new BrowserWindow({
+    width: 320,
+    height: 240,
+    show: false,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false
+    }
   })
 
+  // Load windows
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    mainWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}`)
+    presenterWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}#/presenter`)
+  } else {
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    presenterWindow.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'presenter' })
+  }
+
+  // Show windows when ready
+  mainWindow.on('ready-to-show', () => {
+    mainWindow.show()
+     mainWindow.webContents.openDevTools()
+  })
+
+  presenterWindow.on('ready-to-show', () => {
+    presenterWindow.show()
+    // presenterWindow.webContents.openDevTools()
+  })
+
+  // Set CSP headers for media content
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src 'self' blob: file:; img-src 'self' blob: data: file:; connect-src 'self' ws: wss:;"
+        ]
+      }
+    })
+  })
+
+  // Do the same for presenter window
+  presenterWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src 'self' blob: file:; img-src 'self' blob: data: file:; connect-src 'self' ws: wss:;"
+        ]
+      }
+    })
+  })
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
   })
+  // After creating presenter window
+    ipcMain.on('update-presenter', (_, data) => {
+      presenterWindow.webContents.send('presenter-update', data)
+    })
 
-  //debug
-  mainWindow.webContents.openDevTools()
-
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-  }
+    ipcMain.on('settings-update', (_, data) => {
+      presenterWindow.webContents.send('settings-update', data)
+    })
 }
 
 // This method will be called when Electron has finished

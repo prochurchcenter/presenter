@@ -33,7 +33,13 @@ export const TextAlignmentControl = () => {
                             (item.previewSettings?.textAlign || 'center') === value &&
                             "bg-accent text-accent-foreground"
                         )}
-                        onClick={() => updatePreviewSettings({ textAlign: value as "left" | "center" | "right" | "justify" })}
+                        onClick={() => {
+                            const newSettings = {
+                                ...item.previewSettings,
+                                textAlign: value
+                            };
+                            updatePreviewSettings(newSettings);
+                        }}
                     >
                         <Icon className="h-3 w-3" />
                     </Button>

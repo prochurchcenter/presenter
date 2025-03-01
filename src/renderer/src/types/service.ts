@@ -2,8 +2,8 @@
 
 // Background Settings
 interface BackgroundSettings {
-    type: string | null;
-    url: string | null;
+    type: string;
+    url: string;
   }
   
   // Preview Settings
@@ -11,16 +11,18 @@ interface BackgroundSettings {
     fontFamily: string;
     textEffect: string;
     textColor: string;
+    fontSize: number;
+    fontPosition: string;
     highlightColor: string;
     videoSpeed: number;
     videoMuted: boolean;
     background: BackgroundSettings;
-    textAlign:  "left" | "center" | "right" | undefined;
+    textAlign:  "left" | "center" | "right" | "justify";
   }
   
   // Content Types for Presentations and Songs
   type ContentType = 
-    | { index:number, type: 'verse' | 'chorus' | 'bridge' | 'outro' |'intro', lines: string[], startTime: number, endTime: number }
+    | { index:number, type: 'verse' | 'chorus' | 'bridge' | 'outro' |'intro', lines: string, startTime: number, endTime: number }
     | { index:number,type: 'content', content: string }
     | {index:number,type: 'image', imageUrl: string, content: string };
   
@@ -29,8 +31,7 @@ interface BackgroundSettings {
     id: string;
     type: string;
     title: string;
-    fontSize: number;
-    fontPosition: string;
+   
     previewSettings: PreviewSettings;
     notes: string;
     duration: number;
@@ -42,7 +43,7 @@ interface BackgroundSettings {
     content: Array<{
       index:number;
       type: 'verse' | 'chorus' | 'bridge' | 'outro';
-      lines: string[];
+      lines: string;
       startTime: number;
       endTime: number;
     }>;

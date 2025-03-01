@@ -4,6 +4,7 @@ import { useServiceStore } from "@renderer/store/useServiceStore"
 
 export const PreviewDisplay = () => {
   const { currentItem, item } = useServiceStore()
+  console.log(item.previewSettings)
 
   // Check if all required data is available
   if (!currentItem || !item) {
@@ -21,16 +22,16 @@ export const PreviewDisplay = () => {
   const renderTextLine = (line, index) => (
     <div
       key={`line-${index}-${line.slice(0, 10)}`}
-      className="inline-block"
+      className="block w-full"
       style={{
-        fontSize: `${item.fontSize}px`,
+        fontSize: `${item.previewSettings?.fontSize || 24}px`,
         lineHeight: "1.2",
         padding: "0 5px",
         margin: "2px 0",
         backgroundColor: item.previewSettings?.textEffect === "highlight"
           ? item.previewSettings.highlightColor
           : "transparent",
-        textAlign: "center",
+        textAlign: item.previewSettings?.textAlign || "center",
       }}
     >
       {line}
@@ -39,25 +40,16 @@ export const PreviewDisplay = () => {
 
   const renderContent = () => {
     if (["verse", "chorus", "bridge", "intro", "outro"].includes(currentItem.type)) {
-      // For song type content
       const currentLyric = currentItem.content || currentItem
-      if (!currentLyric) {
-        console.log('Invalid lyric content structure:', currentLyric)
-        return null
-      }
-
-      // Handle different content structures
-      const lines = currentLyric.lines ||
-        (typeof currentLyric.content === 'string' ? currentLyric.content.split('\n') : []) ||
-        (typeof currentLyric === 'string' ? currentLyric.split('\n') : [])
+      if (!currentLyric) return null;
 
       return (
         <div
           className="absolute w-full h-full flex items-start justify-center overflow-hidden"
           style={{
-            alignItems: item.fontPosition === "top"
+            alignItems: item.previewSettings?.fontPosition === "top"
               ? "flex-start"
-              : item.fontPosition === "bottom"
+              : item.previewSettings?.fontPosition === "bottom"
                 ? "flex-end"
                 : "center",
           }}
@@ -73,9 +65,7 @@ export const PreviewDisplay = () => {
                 : "none",
             }}
           >
-            {Array.isArray(lines)
-              ? lines.map((line, index) => renderTextLine(line, index))
-              : renderTextLine(String(lines || ""), 0)}
+            {renderTextLine(currentLyric.lines, currentLyric.index)}
           </div>
         </div>
       )
@@ -93,9 +83,9 @@ export const PreviewDisplay = () => {
             <div
               className="absolute w-full h-full flex items-start justify-center overflow-hidden"
               style={{
-                alignItems: item.fontPosition === "top"
+                alignItems: item.previewSettings.fontPosition === "top"
                   ? "flex-start"
-                  : item.fontPosition === "bottom"
+                  : item.previewSettings.fontPosition === "bottom"
                     ? "flex-end"
                     : "center",
               }}
@@ -125,16 +115,16 @@ export const PreviewDisplay = () => {
               className="absolute inset-0 w-full h-full object-contain"
             />
           )
-        // case "video":
-        //   return (
-        //     // <video
-        //     //   src={slide.videoUrl}
-        //     //   controls
-        //     //   className="absolute inset-0 w-full h-full object-contain"
-        //     //   style={{ playbackRate: slide.videoSpeed || 1 }}
-        //     //   muted={slide.videoMuted}
-        //     // />
-        //   )
+        case "video":
+          return (
+            <video
+              src={slide.videoUrl}
+              controls
+              className="absolute inset-0 w-full h-full object-contain"
+              style={{ "--video-speed": slide.videoSpeed || 1 } as React.CSSProperties}
+              muted={slide.videoMuted}
+            />
+          )
         case "blank":
           return null
         default:
@@ -149,23 +139,29 @@ export const PreviewDisplay = () => {
   return (
     <div className="relative" style={{ width: "100%", paddingTop: "56.25%" }}>
       <div className="absolute inset-0 bg-black rounded-lg overflow-hidden">
-        {/* Background rendering - uncomment and fix if needed */}
-        {item.previewSettings?.background?.type && item.previewSettings.background.url && (
+        {item.previewSettings?.background?.type && (
           item.previewSettings.background.type === "image" ? (
             <img
               src={item.previewSettings.background.url || "/placeholder.svg"}
               alt="Background"
               className="absolute inset-0 w-full h-full object-cover"
             />
-          ) : (
+          ) : item.previewSettings.background.type === "video" ? (
             <video
-              src={item.previewSettings.background.url}
+              src={item.previewSettings.background.url.startsWith('blob:')
+                ? item.previewSettings.background.url.split('blob:file://')[1]
+                : item.previewSettings.background.url}
               autoPlay
               loop
               muted
               className="absolute inset-0 w-full h-full object-cover"
+              onError={(e) => {
+                console.error('Video error:', e);
+                const video = e.target as HTMLVideoElement;
+                console.log('Attempted video URL:', video.src);
+              }}
             />
-          )
+          ) : null
         )}
 
         {renderContent()}

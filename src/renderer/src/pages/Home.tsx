@@ -11,10 +11,16 @@ import {
     sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable'
 import { LyricsItem } from "@renderer/components/lyrics-item"
+import { useEffect } from "react"
 
 
 export function Home() {
-    const { item } = useServiceStore()
+    const { item, setSettings } = useServiceStore()
+
+    useEffect(() => {
+        setSettings(item.previewSettings)
+    }, [])
+
 
 
     const sensors = useSensors(

@@ -140,11 +140,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         </Label>
                     </div>
                     <div>
-                        {services.map((mail) => (
+                        {services.map((service) => (
 
-                            <div className="flex w-full items-center gap-2">
-                                <span>{mail.name}</span>{" "}
-                                <span className="ml-auto text-xs">{mail.date}</span>
+                            <div key={service.id} className="flex w-full items-center gap-2">
+                                <span>{service.name}</span>{" "}
+                                <span className="ml-auto text-xs">{service.date}</span>
                             </div>
 
                         ))}

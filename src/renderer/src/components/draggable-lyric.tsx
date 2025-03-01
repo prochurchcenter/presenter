@@ -28,6 +28,7 @@ export function DraggableLyric({ content }: DraggableLyricProps) {
 
     const { setCurrentItem } = useServiceStore()
 
+
     const getBorderColor = () => {
         switch (content.type) {
             case 'intro':
@@ -41,6 +42,11 @@ export function DraggableLyric({ content }: DraggableLyricProps) {
             default:
                 return 'before:bg-gray-500'
         }
+    }
+
+    const handleOnSelect = () => {
+        setCurrentItem(content)
+
     }
 
     const style = {
@@ -75,11 +81,11 @@ export function DraggableLyric({ content }: DraggableLyricProps) {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-1">
-                        {'lines' in content ? content.lines.map((line, lineIndex) => (
-                            <p key={lineIndex} className="text-l text-primary leading-relaxed">
-                                {line}
+                        {'lines' in content ?
+                            <p key={content.index} className="text-l text-primary leading-relaxed">
+                                {content.lines}
                             </p>
-                        )) : null}
+                            : null}
                     </div>
                 </CardContent>
             </Card>

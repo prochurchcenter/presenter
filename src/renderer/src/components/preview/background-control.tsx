@@ -10,18 +10,27 @@ export const BackgroundControl = () => {
         updatePreviewSettings,
     } = useServiceStore()
 
-    if (!item || !item.previewSettings) {
+    if (!item?.previewSettings?.background) {
         return null;
     }
+
+    const backgroundType = item.previewSettings.background.type || "none"
+
     return (
         <div className="space-y-2">
             <Label className="text-xs text-muted-foreground mb-1">Background</Label>
             <div className="flex items-center space-x-1">
                 <Select
-                    value={item.previewSettings.background.type || "none"}
-                    onValueChange={(value: "image" | "video" | "none") =>
-                        updatePreviewSettings({ background: { ...item.previewSettings.background, type: value === "none" ? null : value } })
-                    }
+                    value={backgroundType}
+                    onValueChange={(value: "image" | "video" | "none") => {
+                        updatePreviewSettings({
+                            background: {
+                                ...item.previewSettings.background,
+                                type: value === "none" ? null : value,
+                                url: null
+                            }
+                        })
+                    }}
                 >
                     <SelectTrigger className="h-7 text-xs flex-grow">
                         <SelectValue placeholder="Select type" />
@@ -34,21 +43,41 @@ export const BackgroundControl = () => {
                         ))}
                     </SelectContent>
                 </Select>
-                {item.previewSettings.background.type && (
-                    <Input
-                        type="file"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0]
-                            if (file) {
-                                const url = URL.createObjectURL(file)
-                                updatePreviewSettings({
-                                    background: { ...item.previewSettings.background, url },
-                                })
-                            }
-                        }}
-                        accept={item.previewSettings.background.type === "image" ? "image/*" : "video/*"}
-                        className="h-7 text-xs flex-grow"
-                    />
+                {backgroundType !== "none" && (
+                    <>
+                        <Input
+                            type="file"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) {
+                                    if (backgroundType === "video") {
+                                        const url = URL.createObjectURL(file)
+                                        updatePreviewSettings({
+                                            background: {
+                                                ...item.previewSettings.background,
+                                                type: backgroundType,
+                                                url: url
+                                            }
+                                        })
+                                    } else {
+                                        const reader = new FileReader()
+                                        reader.onload = (event) => {
+                                            updatePreviewSettings({
+                                                background: {
+                                                    ...item.previewSettings.background,
+                                                    type: backgroundType,
+                                                    url: event.target?.result as string
+                                                }
+                                            })
+                                        }
+                                        reader.readAsDataURL(file)
+                                    }
+                                }
+                            }}
+                            accept={backgroundType === "image" ? "image/*" : "video/*"}
+                            className="h-7 text-xs flex-grow"
+                        />
+                    </>
                 )}
             </div>
         </div>

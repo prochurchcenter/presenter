@@ -40,7 +40,7 @@ export function LyricsItem({ item }: { item: ServiceItem }) {
 
                 if (oldIndex === -1 || newIndex === -1) return items
 
-                const reorderedItems = arrayMove(items as { index: number; type: "verse" | "chorus" | "bridge" | "outro"; lines: string[]; startTime: number; endTime: number; }[], oldIndex, newIndex)
+                const reorderedItems = arrayMove(items as { index: number; type: "verse" | "chorus" | "bridge" | "outro"; lines: string; startTime: number; endTime: number; }[], oldIndex, newIndex)
                 // Update indices after reordering
                 return reorderedItems.map((item: any, idx: number) => {
                     if (typeof item.index === 'number') {

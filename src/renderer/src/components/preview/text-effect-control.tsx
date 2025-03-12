@@ -7,19 +7,19 @@ import { useServiceStore } from "@renderer/store/useServiceStore"
 
 export const TextEffectControl = () => {
     const {
-        item,
+        activeItem,
         updatePreviewSettings,
     } = useServiceStore()
 
-    if (!item?.previewSettings) {
+    if (!activeItem?.previewSettings) {
         return null;
     }
 
     const handleEffectChange = (value: "none" | "shadow" | "highlight") => {
         const newSettings = {
-            ...item.previewSettings,
+            ...activeItem.previewSettings,
             textEffect: value,
-            highlightColor: value === "highlight" ? (item.previewSettings.highlightColor || "rgba(255,255,0,0.3)") : undefined
+            highlightColor: value === "highlight" ? (activeItem.previewSettings.highlightColor || "rgba(255,255,0,0.3)") : undefined
         };
         updatePreviewSettings(newSettings);
         // setSettings(newSettings);
@@ -27,7 +27,7 @@ export const TextEffectControl = () => {
 
     const handleColorChange = (color: string) => {
         const newSettings = {
-            ...item.previewSettings,
+            ...activeItem.previewSettings,
             highlightColor: color
         };
         updatePreviewSettings(newSettings);
@@ -39,7 +39,7 @@ export const TextEffectControl = () => {
             <Label className="text-xs text-muted-foreground mb-1">Text Effect</Label>
             <div className="flex items-center gap-2">
                 <Select
-                    value={item.previewSettings.textEffect || "none"}
+                    value={activeItem.previewSettings.textEffect || "none"}
                     onValueChange={handleEffectChange}
                 >
                     <SelectTrigger className="h-7 text-xs flex-grow">
@@ -51,10 +51,10 @@ export const TextEffectControl = () => {
                         <SelectItem value="highlight">Highlight</SelectItem>
                     </SelectContent>
                 </Select>
-                {item.previewSettings.textEffect === "highlight" && (
+                {activeItem.previewSettings.textEffect === "highlight" && (
                     <Input
                         type="color"
-                        value={item.previewSettings.highlightColor || "#FFFF00"}
+                        value={activeItem.previewSettings.highlightColor || "#FFFF00"}
                         onChange={(e) => handleColorChange(e.target.value)}
                         className="h-7 w-14 p-0 cursor-pointer"
                     />

@@ -61,12 +61,20 @@ interface BackgroundSettings {
   // Service Item Type
   type ServiceItem = SongItem | PresentationItem;
   
+  // Service Item Reference
+  interface ServiceItemReference {
+    id: string;
+    type: 'song' | 'presentation';
+    // Optional custom settings that can override the original item's settings
+    customSettings?: Partial<PreviewSettings>;
+  }
+  
   // Service Interface
   interface Service {
     id: string;
     name: string;
     date: string;
-    items: ServiceItem[];
+    items: ServiceItemReference[];
   }
   
   // Type for the entire data structure
@@ -81,5 +89,6 @@ export type {
     BackgroundSettings,
     PreviewSettings,
     BaseItem,
-    Service
+    Service,
+    ServiceItemReference
 }

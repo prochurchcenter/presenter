@@ -19,16 +19,16 @@ import {
 export function SidebarRight({
     ...props
 }: React.ComponentProps<typeof Sidebar>) {
-    const { setSettings, item } = useServiceStore()
-    const [newSettings, setNewSettings] = React.useState(item?.previewSettings)
+    const { setSettings, activeItem } = useServiceStore()
+    const [newSettings, setNewSettings] = React.useState(activeItem?.previewSettings)
 
 
     React.useEffect(() => {
-        if (!item || !item.previewSettings) {
+        if (!activeItem || !activeItem.previewSettings) {
             return
         }
-        setNewSettings(item.previewSettings)
-    }, [item])
+        setNewSettings(activeItem.previewSettings)
+    }, [activeItem])
 
 
 
@@ -53,8 +53,9 @@ export function SidebarRight({
                         <SidebarMenuButton
                             onClick={() => {
                                 // Add your go live logic here
-                                console.log('Going live...')
-                                setSettings(newSettings)
+                                if (newSettings) {
+                                    setSettings(newSettings)
+                                }
                             }}
                             className="bg-green-500 hover:bg-red-600 text-white w-full justify-center"
                         >

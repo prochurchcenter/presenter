@@ -1,20 +1,58 @@
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
 import { useServiceStore } from "@renderer/store/useServiceStore"
+import { Button } from "@/components/ui/button"
 
 
 export const BackgroundControl = () => {
     const {
-        item,
+        activeItem,
         updatePreviewSettings,
     } = useServiceStore()
 
-    if (!item?.previewSettings?.background) {
+    if (!activeItem?.previewSettings?.background) {
         return null;
     }
 
-    const backgroundType = item.previewSettings.background.type || "none"
+    const backgroundType = activeItem.previewSettings.background.type || "none"
+
+    const handleVideoSelect = async () => {
+        if (window.electron) {
+            try {
+                const filePath = await window.electron.ipcRenderer.invoke('select-video-file');
+                console.log("Selected video path:", filePath);
+
+                updatePreviewSettings({
+                    background: {
+                        ...activeItem.previewSettings.background,
+                        type: "video",
+                        url: filePath
+                    }
+                });
+            } catch (err) {
+                console.error("Error selecting video:", err);
+            }
+        }
+    };
+
+    const handleImageSelect = async () => {
+        if (window.electron) {
+            try {
+                const filePath = await window.electron.ipcRenderer.invoke('select-image-file');
+                console.log("Selected image path:", filePath);
+
+                updatePreviewSettings({
+                    background: {
+                        ...activeItem.previewSettings.background,
+                        type: "image",
+                        url: filePath
+                    }
+                });
+            } catch (err) {
+                console.error("Error selecting image:", err);
+            }
+        }
+    };
 
     return (
         <div className="space-y-2">
@@ -25,11 +63,17 @@ export const BackgroundControl = () => {
                     onValueChange={(value: "image" | "video" | "none") => {
                         updatePreviewSettings({
                             background: {
-                                ...item.previewSettings.background,
-                                type: value === "none" ? null : value,
-                                url: null
+                                ...activeItem.previewSettings.background,
+                                type: value === "none" ? "" : value,
+                                url: ""
                             }
-                        })
+                        });
+
+                        if (value === "video" && window.electron) {
+                            handleVideoSelect();
+                        } else if (value === "image" && window.electron) {
+                            handleImageSelect();
+                        }
                     }}
                 >
                     <SelectTrigger className="h-7 text-xs flex-grow">
@@ -43,44 +87,27 @@ export const BackgroundControl = () => {
                         ))}
                     </SelectContent>
                 </Select>
-                {backgroundType !== "none" && (
-                    <>
-                        <Input
-                            type="file"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0]
-                                if (file) {
-                                    if (backgroundType === "video") {
-                                        const url = URL.createObjectURL(file)
-                                        updatePreviewSettings({
-                                            background: {
-                                                ...item.previewSettings.background,
-                                                type: backgroundType,
-                                                url: url
-                                            }
-                                        })
-                                    } else {
-                                        const reader = new FileReader()
-                                        reader.onload = (event) => {
-                                            updatePreviewSettings({
-                                                background: {
-                                                    ...item.previewSettings.background,
-                                                    type: backgroundType,
-                                                    url: event.target?.result as string
-                                                }
-                                            })
-                                        }
-                                        reader.readAsDataURL(file)
-                                    }
-                                }
-                            }}
-                            accept={backgroundType === "image" ? "image/*" : "video/*"}
-                            className="h-7 text-xs flex-grow"
-                        />
-                    </>
+
+                {backgroundType === "image" && (
+                    <Button
+                        className="h-7 text-xs"
+                        onClick={handleImageSelect}
+                        variant="outline"
+                    >
+                        Select Image
+                    </Button>
+                )}
+
+                {backgroundType === "video" && (
+                    <Button
+                        className="h-7 text-xs"
+                        onClick={handleVideoSelect}
+                        variant="outline"
+                    >
+                        Select Video
+                    </Button>
                 )}
             </div>
         </div>
     )
 }
-

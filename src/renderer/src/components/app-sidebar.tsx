@@ -37,13 +37,13 @@ const data = {
         },
         {
             title: "Setlist",
-            url: "#",
+            url: "/setlist",
             icon: ListMusic,
             isActive: false,
         },
         {
             title: "Collection",
-            url: "#",
+            url: "/collection",
             icon: FolderOpen,
             isActive: false,
         },
@@ -57,10 +57,27 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const { services, items } = useServiceStore()
+    const { services, resolvedItems: serviceItems, currentService, setCurrentService, loadActiveService } = useServiceStore()
     const navigate = useNavigate()
     const [activeItem, setActiveItem] = React.useState(data.navMain[0])
+    const [isLoading, setIsLoading] = React.useState(true)
     const { setOpen } = useSidebar()
+    
+    // Load active service on startup
+    React.useEffect(() => {
+        async function init() {
+            setIsLoading(true);
+            try {
+                await loadActiveService();
+            } catch (error) {
+                console.error('Failed to load active service:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        
+        init();
+    }, [loadActiveService]);
 
     return (
         <Sidebar
@@ -107,6 +124,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                                 setActiveItem(item)
                                                 if (item.title === "Presenter") {
                                                     navigate("/")
+                                                } else if (item.title === "Collection") {
+                                                    navigate("/collection")
+                                                } else if (item.title === "Setlist") {
+                                                    navigate("/setlist")
+                                                } else if (item.title === "Settings") {
+                                                    navigate("/settings")
                                                 }
                                                 setOpen(true)
                                             }}
@@ -139,25 +162,43 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                             <span>Setlist</span>
                         </Label>
                     </div>
-                    <div>
-                        {services.map((service) => (
-
-                            <div key={service.id} className="flex w-full items-center gap-2">
-                                <span>{service.name}</span>{" "}
-                                <span className="ml-auto text-xs">{service.date}</span>
-                            </div>
-
-                        ))}
-                    </div>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-2 text-sm text-muted-foreground">
+                            Loading services...
+                        </div>
+                    ) : services.length > 0 ? (
+                        <div className="mt-2">
+                            <select 
+                                className="w-full p-2 rounded-md border border-input bg-background text-sm"
+                                value={currentService?.id || ''}
+                                onChange={(e) => {
+                                    const selectedService = services.find(svc => svc.id === e.target.value);
+                                    if (selectedService) {
+                                        setCurrentService(selectedService);
+                                    }
+                                }}
+                            >
+                                {services.map((service) => (
+                                    <option key={service.id} value={service.id}>
+                                        {service.name} - {service.date}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center py-2 text-sm text-muted-foreground">
+                            No services found
+                        </div>
+                    )}
                 </SidebarHeader>
                 <SidebarContent>
                     <SidebarGroup className="px-0">
                         <SidebarGroupContent>
                             <CollapsableItems
-                                service={items}
+                                service={serviceItems}
                             />
                             <NotesSection
-                                notes={items?.[0]?.notes || ''}
+                                notes={serviceItems?.[0]?.notes || ''}
                                 onNotesChange={(newNotes) => {
                                     // Handle notes update through your store
                                     console.log('Notes updated:', newNotes)

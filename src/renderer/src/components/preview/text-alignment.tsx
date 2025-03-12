@@ -6,12 +6,12 @@ import { cn } from "@/lib/utils"
 
 export const TextAlignmentControl = () => {
     const {
-        item,
+        activeItem,
         updatePreviewSettings
     } = useServiceStore()
 
     // Add null check for item and previewSettings
-    if (!item || !item.previewSettings) {
+    if (!activeItem || !activeItem.previewSettings) {
         return null;
     }
 
@@ -30,15 +30,13 @@ export const TextAlignmentControl = () => {
                         variant="outline"
                         size="sm"
                         className={cn("h-6 w-6 p-0",
-                            (item.previewSettings?.textAlign || 'center') === value &&
+                            (activeItem.previewSettings?.textAlign || 'center') === value &&
                             "bg-accent text-accent-foreground"
                         )}
                         onClick={() => {
-                            const newSettings = {
-                                ...item.previewSettings,
-                                textAlign: value
-                            };
-                            updatePreviewSettings(newSettings);
+                            updatePreviewSettings({
+                                textAlign: value as "left" | "center" | "right" | "justify"
+                            });
                         }}
                     >
                         <Icon className="h-3 w-3" />
@@ -48,4 +46,3 @@ export const TextAlignmentControl = () => {
         </div>
     )
 }
-

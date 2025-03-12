@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { PreviewSettings } from "@renderer/types/service";
-import { useServiceStore } from "@renderer/store/useServiceStore"
 
 export function Presenter() {
     const [currentItem, setCurrentItem] = useState<any>(null);
@@ -9,7 +8,7 @@ export function Presenter() {
     const [latency, setLatency] = useState<number>(0);
     useEffect(() => {
         if (window.electron) {
-            window.electron.ipcRenderer.on('presenter-update', (event, data) => {
+            window.electron.ipcRenderer.on('presenter-update', (_, data) => {
                 const receivedTime = performance.now();
                 const clickTime = data.timestamp || receivedTime;
                 setLatency(receivedTime - clickTime);
@@ -34,7 +33,7 @@ export function Presenter() {
         // Initialize with default settings
 
         if (window.electron) {
-            window.electron.ipcRenderer.on('settings-update', (event, data) => {
+            window.electron.ipcRenderer.on('settings-update', (_, data) => {
                 if (data) {
                     setSettings(data);
                 }
@@ -93,6 +92,8 @@ export function Presenter() {
 
         return null;
     };
+
+    console.log(settings?.background.url)
 
     return (
         <div className="w-full h-screen bg-black">

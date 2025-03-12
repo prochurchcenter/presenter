@@ -15,7 +15,7 @@ import { useServiceStore } from "@renderer/store/useServiceStore";
 
 
 export default function Layout() {
-    const { item } = useServiceStore();
+    const { activeItem } = useServiceStore();
     return (
         <SidebarProvider
             style={
@@ -32,11 +32,11 @@ export default function Layout() {
                     <Breadcrumb>
                         <BreadcrumbList>
                             <BreadcrumbItem className="hidden md:block">
-                                <BreadcrumbLink href="#">{item.type}</BreadcrumbLink>
+                                <BreadcrumbLink href="#">{activeItem?.type || ''}</BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator className="hidden md:block" />
                             <BreadcrumbItem>
-                                <BreadcrumbPage>{item.title}</BreadcrumbPage>
+                                <BreadcrumbPage>{activeItem?.title || ''}</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>

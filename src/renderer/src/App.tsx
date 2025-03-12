@@ -3,26 +3,10 @@ import Layout from "@renderer/components/Layout"
 import { Home } from "@renderer/pages/Home"
 import { Settings } from "@renderer/pages/Settings"
 import { Presenter } from "@renderer/pages/Presenter"
+import { Collection } from "@renderer/pages/Collection"
+import { Setlist } from "@renderer/pages/Setlist"
 import { ErrorBoundary } from '@renderer/components/error-boundary'
-
-// const router = createHashRouter([
-//   {
-//     path: "/",
-//     element: <Layout />,
-//     errorElement: <ErrorBoundary />,
-//     children: [
-//       {
-//         index: true,
-//         element: <Home />
-//       },
-//       {
-//         path: "/presenter",
-//         element: <Presenter />
-//       },
-
-//     ]
-//   }
-// ])
+import { Toaster } from '@renderer/components/ui/toaster'
 
 function App(): JSX.Element {
   const isPresenter = window.location.hash.includes('presenter')
@@ -36,9 +20,12 @@ function App(): JSX.Element {
           <Route path="/" element={<Layout />} errorElement={<ErrorBoundary />}>
             <Route index element={<Home />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="collection" element={<Collection />} />
+            <Route path="setlist" element={<Setlist />} />
           </Route>
         )}
       </Routes>
+      <Toaster />
     </HashRouter>
   )
 }

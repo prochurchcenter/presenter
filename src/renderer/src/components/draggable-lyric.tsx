@@ -44,10 +44,7 @@ export function DraggableLyric({ content }: DraggableLyricProps) {
         }
     }
 
-    const handleOnSelect = () => {
-        setCurrentItem(content)
-
-    }
+    // Removed unused function - will use onClick directly
 
     const style = {
         transform: CSS.Transform.toString(transform),

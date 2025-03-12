@@ -6,38 +6,31 @@ import { useServiceStore } from "@renderer/store/useServiceStore"
 
 export const FontControl = () => {
     const {
-        item,
+        activeItem,
         updatePreviewSettings,
-        setSettings
     } = useServiceStore()
 
-    if (!item || !item.previewSettings) {
+    if (!activeItem || !activeItem.previewSettings) {
         return null;
     }
 
     const handleFontChange = (value: string) => {
-        const newSettings = { ...item.previewSettings, fontFamily: value };
-        updatePreviewSettings(newSettings);
-        // setSettings(newSettings);
+        updatePreviewSettings({ fontFamily: value });
     }
 
     const handleFontSizeChange = (value: number) => {
-        const newSettings = { ...item.previewSettings, fontSize: value };
-        updatePreviewSettings(newSettings);
-        // setSettings(newSettings);
+        updatePreviewSettings({ fontSize: value });
     }
 
     const handlePositionChange = (value: "top" | "center" | "bottom") => {
-        const newSettings = { ...item.previewSettings, fontPosition: value };
-        updatePreviewSettings(newSettings);
-        // setSettings(newSettings);
+        updatePreviewSettings({ fontPosition: value });
     }
 
     return (
         <>
             <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground mb-1">Font</Label>
-                <Select value={item.previewSettings.fontFamily} onValueChange={handleFontChange}>
+                <Select value={activeItem.previewSettings.fontFamily} onValueChange={handleFontChange}>
                     <SelectTrigger className="h-7 text-xs">
                         <SelectValue placeholder="Select font" />
                     </SelectTrigger>
@@ -54,7 +47,7 @@ export const FontControl = () => {
                 <Label className="text-xs text-muted-foreground mb-1">Font Size</Label>
                 <Input
                     type="number"
-                    value={item.previewSettings.fontSize}
+                    value={activeItem.previewSettings.fontSize}
                     onChange={(e) => handleFontSizeChange(Number(e.target.value))}
                     className="h-7 text-xs"
                 />
@@ -62,7 +55,7 @@ export const FontControl = () => {
             <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground mb-1">Position</Label>
                 <Select
-                    value={item.previewSettings.fontPosition}
+                    value={activeItem.previewSettings.fontPosition}
                     onValueChange={handlePositionChange}
                 >
                     <SelectTrigger className="h-7 text-xs">
@@ -78,4 +71,3 @@ export const FontControl = () => {
         </>
     )
 }
-

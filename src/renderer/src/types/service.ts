@@ -23,8 +23,9 @@ interface BackgroundSettings {
   // Content Types for Presentations and Songs
   type ContentType = 
     | { index:number, type: 'verse' | 'chorus' | 'bridge' | 'outro' |'intro', lines: string, startTime: number, endTime: number }
-    | { index:number,type: 'content', content: string }
-    | {index:number,type: 'image', imageUrl: string, content: string };
+    | { index:number, type: 'content', content: string }
+    | { index:number, type: 'image', imageUrl: string, content: string }
+    | { index:number, type: 'video', videoUrl: string, videoSpeed?: number, videoMuted?: boolean, content?: string };
   
   // Base Item Interface
   interface BaseItem {
@@ -53,8 +54,9 @@ interface BackgroundSettings {
   interface PresentationItem extends BaseItem {
     type: 'presentation';
     content: Array<
-      { type: 'content', content: string } | 
-      { type: 'image', imageUrl: string, content: string }
+      { type: 'content', content: string, index?: number } | 
+      { type: 'image', imageUrl: string, content: string, index?: number } |
+      { type: 'video', videoUrl: string, videoSpeed?: number, videoMuted?: boolean, content?: string, index?: number }
     >;
   }
   

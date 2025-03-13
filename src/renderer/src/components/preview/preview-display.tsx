@@ -42,8 +42,6 @@ export const PreviewDisplay = () => {
       const currentLyric = currentItem.content || currentItem
       if (!currentLyric) return null;
 
-      console.log(activeItem.previewSettings.background.url)
-
       return (
         <div
           className="absolute w-full h-full flex items-start justify-center overflow-hidden"
@@ -70,7 +68,7 @@ export const PreviewDisplay = () => {
           </div>
         </div>
       )
-    } else if (currentItem.type === "presentation") {
+    } else if (currentItem.type === "presentation" || currentItem.currentSlide) {
       // Use the current slide directly from currentItem
       const slide = currentItem.currentSlide || currentItem
       if (!slide) {
@@ -118,13 +116,46 @@ export const PreviewDisplay = () => {
           )
         case "video":
           return (
-            <video
-              src={slide.videoUrl}
-              controls
-              className="absolute inset-0 w-full h-full object-contain"
-              style={{ "--video-speed": slide.videoSpeed || 1 } as React.CSSProperties}
-              muted={slide.videoMuted}
-            />
+            <>
+              <video
+                src={slide.videoUrl}
+                autoPlay
+                loop
+                className="absolute inset-0 w-full h-full object-contain"
+                style={{ playbackRate: slide.videoSpeed || 1 }}
+                muted={slide.videoMuted}
+                controls={false}
+                playsInline
+              />
+              {slide.content && (
+                <div
+                  className="absolute w-full h-full flex items-start justify-center overflow-hidden"
+                  style={{
+                    alignItems: activeItem.previewSettings.fontPosition === "top"
+                      ? "flex-start"
+                      : activeItem.previewSettings.fontPosition === "bottom"
+                        ? "flex-end"
+                        : "center",
+                  }}
+                >
+                  <div
+                    className="w-[80%] max-h-full overflow-hidden py-4"
+                    style={{
+                      textAlign: activeItem.previewSettings?.textAlign || "center",
+                      fontFamily: activeItem.previewSettings?.fontFamily || "sans-serif",
+                      color: activeItem.previewSettings?.textColor || "#ffffff",
+                      textShadow: activeItem.previewSettings?.textEffect === "shadow"
+                        ? "2px 2px 4px rgba(0,0,0,0.5)"
+                        : "none",
+                    }}
+                  >
+                    {(slide.content?.split("\n") || []).map((line: string, index: number) =>
+                      renderTextLine(line, index)
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )
         case "blank":
           return null

@@ -25,9 +25,20 @@ export function LyricsItem({ item }: { item: ServiceItem }) {
 
     useEffect(() => {
         if (item?.content && Array.isArray(item.content) && item.content.length > 0) {
-            setLyrics(item.content)
+            // Make sure each item has an index property for sorting and selection
+            const contentWithIndices = item.content.map((contentItem, idx) => {
+                // Only add index if it doesn't already exist
+                if (typeof contentItem.index === 'undefined') {
+                    return {
+                        ...contentItem,
+                        index: idx
+                    };
+                }
+                return contentItem;
+            });
+            setLyrics(contentWithIndices);
         } else {
-            setLyrics([])
+            setLyrics([]);
         }
     }, [item])
 

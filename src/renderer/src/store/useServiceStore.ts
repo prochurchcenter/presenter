@@ -223,12 +223,26 @@ export const useServiceStore = create<ServiceState>((set, get) => ({
     setCurrentItem: (item: any) => {
       if (!item) return;
       
+      // Log for debugging
+      console.log("Setting current item:", item);
+      
+      // Update the store state
       set({ currentItem: item });
-      // Send to presenter window
-      window.electron?.ipcRenderer.send('update-presenter', {
+      
+      // Create a payload for the presenter window
+      // Make sure we're sending everything needed, especially for presentation slides
+      const payload = {
         ...item,
         timestamp: performance.now()
-      });
+      };
+      
+      // If there's a currentSlide property, ensure it's properly structured
+      if (item.currentSlide) {
+        console.log("Sending slide to presenter:", item.currentSlide);
+      }
+      
+      // Send to presenter window with all necessary data
+      window.electron?.ipcRenderer.send('update-presenter', payload);
     },
     
     updatePreviewSettings: (settings: Partial<PreviewSettings>) => set((state) => {

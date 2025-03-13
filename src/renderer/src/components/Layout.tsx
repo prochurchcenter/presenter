@@ -10,12 +10,13 @@ import {
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useServiceStore } from "@renderer/store/useServiceStore";
 
 
 export default function Layout() {
     const { activeItem } = useServiceStore();
+    const location = useLocation();
     return (
         <SidebarProvider
             style={
@@ -45,7 +46,9 @@ export default function Layout() {
                     <Outlet />
                 </div>
             </SidebarInset>
-            <SidebarRight />
+            {(location.pathname === '/' || location.pathname === '/home') && (
+                <SidebarRight />
+            )}
         </SidebarProvider>
     )
 }

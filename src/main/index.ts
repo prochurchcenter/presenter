@@ -50,12 +50,15 @@ function createWindow(): void {
 
   // Create presenter window
   const presenterWindow = new BrowserWindow({
-    width: 320,
-    height: 240,
-    show: false,
+    fullscreen: true,
+    titleBarStyle: 'hidden',
+    alwaysOnTop: true,
+    // kiosk: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      nodeIntegration: true,
+      contextIsolation: false
     }
   })
 
@@ -78,7 +81,7 @@ function createWindow(): void {
 
   presenterWindow.on('ready-to-show', () => {
     presenterWindow.show()
-    // presenterWindow.webContents.openDevTools()
+    presenterWindow.webContents.openDevTools()
   })
 
   // Set CSP headers for media content
@@ -110,11 +113,31 @@ function createWindow(): void {
   })
   // After creating presenter window
     ipcMain.on('update-presenter', (_, data) => {
-      presenterWindow.webContents.send('presenter-update', data)
+      console.log('Received update to send to presenter:', data);
+      if (!data) {
+        console.error('Invalid data received for presenter');
+        return;
+      }
+      
+      // Check if presenter window is available
+      if (presenterWindow.isDestroyed()) {
+        console.error('Presenter window is destroyed, cannot send update');
+        return;
+      }
+      
+      try {
+        // Send the data to presenter window
+        presenterWindow.webContents.send('presenter-update', data);
+      } catch (error) {
+        console.error('Error sending update to presenter:', error);
+      }
     })
 
     ipcMain.on('settings-update', (_, data) => {
-      presenterWindow.webContents.send('settings-update', data)
+      console.log('Received settings update for presenter');
+      if (!presenterWindow.isDestroyed()) {
+        presenterWindow.webContents.send('settings-update', data);
+      }
     })
 
     ipcMain.on('select-video', async () => {

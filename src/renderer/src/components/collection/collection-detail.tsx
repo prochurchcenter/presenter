@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { SongEditor } from './song-editor';
 import { PresentationEditor } from './presentation-editor';
-import { ServiceItem, SongItem, PresentationItem } from '@/types/service';
+import { ServiceItem, SongItem, PresentationItem, PreviewSettings } from '@/types/service';
 import { useDatabase } from '@/hooks/use-database';
 import { useServiceStore } from '@renderer/store/useServiceStore';
 
@@ -47,6 +47,13 @@ export function CollectionDetail({ item, onDelete, onUpdate }: CollectionDetailP
     setEditedItem(prev => ({
       ...prev,
       content
+    }));
+  };
+
+  const updatePreviewSettings = (settings: PreviewSettings) => {
+    setEditedItem(prev => ({
+      ...prev,
+      previewSettings: settings
     }));
   };
 
@@ -110,11 +117,15 @@ export function CollectionDetail({ item, onDelete, onUpdate }: CollectionDetailP
             <SongEditor 
               content={(editedItem as SongItem).content}
               onChange={updateContent}
+              previewSettings={editedItem.previewSettings}
+              onPreviewSettingsChange={updatePreviewSettings}
             />
           ) : (
             <PresentationEditor
               content={(editedItem as PresentationItem).content}
               onChange={updateContent}
+              previewSettings={editedItem.previewSettings}
+              onPreviewSettingsChange={updatePreviewSettings}
             />
           )}
         </div>

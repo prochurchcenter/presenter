@@ -11,7 +11,8 @@ export const useAppStore = create<AppState>((set) => ({
   isLoading: false,
   setIsLoading: (loading) => set({ isLoading: loading }),
   theme: 'light',
-  toggleTheme: () => set((state) => ({ 
-    theme: state.theme === 'light' ? 'dark' : 'light' 
-  }))
+  toggleTheme: () =>
+    set((state) => ({
+      theme: state.theme === 'light' ? 'dark' : 'light'
+    }))
 }))

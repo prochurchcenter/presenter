@@ -16,13 +16,16 @@ interface PresentationState {
 export const usePresentationStore = create<PresentationState>((set) => ({
   slides: [],
   currentSlideIndex: 0,
-  addSlide: (slide) => set((state) => ({ 
-    slides: [...state.slides, slide] 
-  })),
-  removeSlide: (id) => set((state) => ({ 
-    slides: state.slides.filter(slide => slide.id !== id) 
-  })),
-  setCurrentSlide: (index) => set({ 
-    currentSlideIndex: index 
-  })
+  addSlide: (slide) =>
+    set((state) => ({
+      slides: [...state.slides, slide]
+    })),
+  removeSlide: (id) =>
+    set((state) => ({
+      slides: state.slides.filter((slide) => slide.id !== id)
+    })),
+  setCurrentSlide: (index) =>
+    set({
+      currentSlideIndex: index
+    })
 }))

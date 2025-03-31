@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react'
-import { PlusCircle, Music, FileText } from 'lucide-react'
+import { PlusCircle, Music, FileText, Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ServiceItem } from '@/types/service'
 import { useDatabase } from '@/hooks/use-database'
 import CollectionDetail from '@/components/collection/collection-detail'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import CreateItemForm from '@/components/collection/create-item-form'
 import { useToast } from '@/components/ui/use-toast'
+import { cn } from '@/lib/utils'
 
 export function Collection() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -17,6 +18,7 @@ export function Collection() {
   const [filteredItems, setFilteredItems] = useState<ServiceItem[]>([])
   const [selectedItem, setSelectedItem] = useState<ServiceItem | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const { getAllItems, deleteItem, getAllResult } = useDatabase()
   const { toast } = useToast()
 
@@ -71,17 +73,27 @@ export function Collection() {
     toast({ title: 'Success', description: 'Item updated successfully.' })
   }
 
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed)
+  }
+
   return (
     <div className="flex flex-1 overflow-hidden">
       {/* Collection List Panel */}
-      <div className="w-1/3 border-r overflow-y-auto">
+      <div className={cn(
+        "border-r overflow-y-auto transition-all duration-300",
+        isSidebarCollapsed ? "w-0 -ml-2 opacity-0" : "w-full md:w-1/3 lg:w-1/4 opacity-100"
+      )}>
         <div className="flex items-center p-4 sticky top-0 bg-background z-10">
-          <Input
-            placeholder="Search collections..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1"
-          />
+          <div className="relative flex-1">
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search collections..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon" className="ml-2">
@@ -89,6 +101,12 @@ export function Collection() {
               </Button>
             </DialogTrigger>
             <DialogContent>
+              <DialogTitle>
+                Create {activeTab === 'songs' ? 'Song' : 'Presentation'}
+              </DialogTitle>
+              <DialogDescription>
+                Add a new {activeTab === 'songs' ? 'song' : 'presentation'} to your collection.
+              </DialogDescription>
               <CreateItemForm
                 type={activeTab === 'songs' ? 'song' : 'presentation'}
                 onSuccess={handleCreateSuccess}
@@ -117,7 +135,7 @@ export function Collection() {
                 filteredItems.map((item) => (
                   <Button
                     key={item.id}
-                    variant="ghost"
+                    variant={selectedItem?.id === item.id ? "secondary" : "ghost"}
                     size="sm"
                     className="w-full justify-start text-left h-auto py-2"
                     onClick={() => handleItemClick(item)}
@@ -142,7 +160,7 @@ export function Collection() {
                 filteredItems.map((item) => (
                   <Button
                     key={item.id}
-                    variant="ghost"
+                    variant={selectedItem?.id === item.id ? "secondary" : "ghost"}
                     size="sm"
                     className="w-full justify-start text-left h-auto py-2"
                     onClick={() => handleItemClick(item)}
@@ -161,8 +179,30 @@ export function Collection() {
         </Tabs>
       </div>
 
+      {/* Toggle sidebar button */}
+      <div className="absolute top-4 left-4 z-20">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={toggleSidebar}
+          className={cn(
+            "p-1.5 h-auto",
+            isSidebarCollapsed ? "ml-0" : "hidden md:flex"
+          )}
+        >
+          {isSidebarCollapsed ? (
+            <FileText className="h-4 w-4" />
+          ) : (
+            <span className="sr-only">Toggle sidebar</span>
+          )}
+        </Button>
+      </div>
+
       {/* Detail View */}
-      <div className="flex-1 overflow-y-auto">
+      <div className={cn(
+        "flex-1 overflow-y-auto",
+        isSidebarCollapsed ? "ml-8" : ""
+      )}>
         {selectedItem ? (
           <CollectionDetail
             item={selectedItem}

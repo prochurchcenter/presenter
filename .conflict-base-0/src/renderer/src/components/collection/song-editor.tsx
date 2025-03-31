@@ -1,11 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, GripVertical, Trash } from 'lucide-react';
+import { PlusCircle, GripVertical, Trash, Edit, Settings } from 'lucide-react';
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { CSS } from '@dnd-kit/utilities';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { PreviewSettingsForm } from '@/components/preview/preview-settings-form';
+import { PreviewSettings } from '@/types/service';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface SongSectionProps {
   section: any;
@@ -35,22 +40,22 @@ function SongSection({ section, onChange, onRemove }: SongSectionProps) {
   };
 
   return (
-    <div 
-      ref={setNodeRef} 
-      style={style} 
+    <div
+      ref={setNodeRef}
+      style={style}
       className={`border rounded-lg mb-4 ${getSectionColor(section.type)}`}
     >
       <div className="flex items-center p-3 border-b bg-muted/20">
-        <div 
-          {...attributes} 
+        <div
+          {...attributes}
           {...listeners}
           className="cursor-grab mr-2 touch-none"
         >
           <GripVertical className="h-5 w-5 text-muted-foreground" />
         </div>
 
-        <Select 
-          value={section.type} 
+        <Select
+          value={section.type}
           onValueChange={(value) => onChange(section.index, 'type', value)}
         >
           <SelectTrigger className="w-[150px]">
@@ -98,9 +103,20 @@ interface SongEditorProps {
     endTime: number;
   }>;
   onChange: (content: any[]) => void;
+  previewSettings?: PreviewSettings;
+  onPreviewSettingsChange?: (settings: PreviewSettings) => void;
 }
 
-export function SongEditor({ content, onChange }: SongEditorProps) {
+export function SongEditor({
+  content,
+  onChange,
+  previewSettings,
+  onPreviewSettingsChange
+}: SongEditorProps) {
+  const [isRichEditorOpen, setIsRichEditorOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("lyrics");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -121,10 +137,10 @@ export function SongEditor({ content, onChange }: SongEditorProps) {
   };
 
   const addSection = () => {
-    const maxIndex = content.length > 0 
+    const maxIndex = content.length > 0
       ? Math.max(...content.map(section => section.index)) + 1
       : 1;
-    
+
     const newSection = {
       index: maxIndex,
       type: 'verse' as const,
@@ -132,7 +148,7 @@ export function SongEditor({ content, onChange }: SongEditorProps) {
       startTime: 0,
       endTime: 0
     };
-    
+
     onChange([...content, newSection]);
   };
 
@@ -143,50 +159,111 @@ export function SongEditor({ content, onChange }: SongEditorProps) {
 
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
-    
+
     if (active.id !== over.id) {
       const originalIndex = content.findIndex(item => item.index === active.id);
       const newIndex = content.findIndex(item => item.index === over.id);
-      
+
       const reordered = [...content];
       const [movedItem] = reordered.splice(originalIndex, 1);
       reordered.splice(newIndex, 0, movedItem);
-      
+
       onChange(reordered);
+    }
+  };
+
+  const handleRichEditorUpdates = (sections: any[]) => {
+    // Update the indices to maintain continuity
+    const updatedSections = sections.map((section, idx) => ({
+      ...section,
+      index: idx + 1
+    }));
+
+    onChange(updatedSections);
+    setIsRichEditorOpen(false);
+  };
+
+  const handlePreviewSettingsChange = (settings: PreviewSettings) => {
+    if (onPreviewSettingsChange) {
+      onPreviewSettingsChange(settings);
     }
   };
 
   return (
     <div className="space-y-4">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-        modifiers={[restrictToVerticalAxis]}
-      >
-        <SortableContext
-          items={content.map(section => section.index)}
-          strategy={verticalListSortingStrategy}
-        >
-          {content.map(section => (
-            <SongSection
-              key={section.index}
-              section={section}
-              onChange={updateSection}
-              onRemove={removeSection}
-            />
-          ))}
-        </SortableContext>
-      </DndContext>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-2 mb-4">
+          <TabsTrigger value="lyrics" className="text-sm">
+            <Edit className="h-4 w-4 mr-2" />
+            Lyrics
+          </TabsTrigger>
+          <TabsTrigger value="preview" className="text-sm">
+            <Settings className="h-4 w-4 mr-2" />
+            Preview Settings
+          </TabsTrigger>
+        </TabsList>
 
-      <Button 
-        onClick={addSection}
-        variant="outline"
-        className="w-full"
-      >
-        <PlusCircle className="h-4 w-4 mr-2" />
-        Add Section
-      </Button>
+        <TabsContent value="lyrics" className="space-y-4">
+          <div className="flex justify-end mb-4">
+            <Button
+              onClick={() => setIsRichEditorOpen(true)}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Edit className="h-4 w-4" />
+              <span>Rich Editor</span>
+            </Button>
+          </div>
+
+          <Dialog open={isRichEditorOpen} onOpenChange={setIsRichEditorOpen}>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Rich Lyrics Editor</DialogTitle>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis]}
+          >
+            <SortableContext
+              items={content.map(section => section.index)}
+              strategy={verticalListSortingStrategy}
+            >
+              {content.map(section => (
+                <SongSection
+                  key={section.index}
+                  section={section}
+                  onChange={updateSection}
+                  onRemove={removeSection}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+
+          <Button
+            onClick={addSection}
+            variant="outline"
+            className="w-full"
+          >
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Add Section
+          </Button>
+        </TabsContent>
+
+        <TabsContent value="preview" className="space-y-4">
+          {previewSettings && onPreviewSettingsChange && (
+            <PreviewSettingsForm
+              initialSettings={previewSettings}
+              onChange={handlePreviewSettingsChange}
+            />
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

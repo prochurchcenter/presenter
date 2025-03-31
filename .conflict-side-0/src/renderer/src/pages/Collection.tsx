@@ -1,77 +1,75 @@
-import { useState, useEffect } from 'react';
-import { PlusCircle, Music, FileText } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ServiceItem } from '@/types/service';
-import { useDatabase } from '@/hooks/use-database';
-import CollectionDetail from '@/components/collection/collection-detail';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import CreateItemForm from '@/components/collection/create-item-form';
-import { useToast } from '@/components/ui/use-toast';
+import { useState, useEffect } from 'react'
+import { PlusCircle, Music, FileText } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ServiceItem } from '@/types/service'
+import { useDatabase } from '@/hooks/use-database'
+import CollectionDetail from '@/components/collection/collection-detail'
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import CreateItemForm from '@/components/collection/create-item-form'
+import { useToast } from '@/components/ui/use-toast'
 
 export function Collection() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('songs');
-  const [collections, setCollections] = useState<ServiceItem[]>([]);
-  const [filteredItems, setFilteredItems] = useState<ServiceItem[]>([]);
-  const [selectedItem, setSelectedItem] = useState<ServiceItem | null>(null);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const { getAllItems, deleteItem, getAllResult } = useDatabase();
-  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeTab, setActiveTab] = useState('songs')
+  const [collections, setCollections] = useState<ServiceItem[]>([])
+  const [filteredItems, setFilteredItems] = useState<ServiceItem[]>([])
+  const [selectedItem, setSelectedItem] = useState<ServiceItem | null>(null)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const { getAllItems, deleteItem, getAllResult } = useDatabase()
+  const { toast } = useToast()
 
   useEffect(() => {
-    loadCollections();
-  }, [activeTab]);
+    loadCollections()
+  }, [activeTab])
 
   useEffect(() => {
-    filterItems();
-  }, [searchQuery, collections]);
+    filterItems()
+  }, [searchQuery, collections])
 
   const loadCollections = async () => {
-    const itemType = activeTab === 'songs' ? 'song' : 'presentation';
-    const items = await getAllItems(itemType);
-    setCollections(items || []);
-  };
+    const itemType = activeTab === 'songs' ? 'song' : 'presentation'
+    const items = await getAllItems(itemType)
+    setCollections(items || [])
+  }
 
   const filterItems = () => {
     if (!searchQuery.trim()) {
-      setFilteredItems(collections);
-      return;
+      setFilteredItems(collections)
+      return
     }
 
-    const query = searchQuery.toLowerCase();
-    const filtered = collections.filter((item) => 
-      item.title.toLowerCase().includes(query)
-    );
-    setFilteredItems(filtered);
-  };
+    const query = searchQuery.toLowerCase()
+    const filtered = collections.filter((item) => item.title.toLowerCase().includes(query))
+    setFilteredItems(filtered)
+  }
 
   const handleItemClick = (item: ServiceItem) => {
-    setSelectedItem(item);
-  };
+    setSelectedItem(item)
+  }
 
   const handleDeleteItem = async (item: ServiceItem) => {
     if (window.confirm(`Are you sure you want to delete "${item.title}"?`)) {
-      await deleteItem(item.type as 'song' | 'presentation', item.id);
-      await loadCollections();
+      await deleteItem(item.type as 'song' | 'presentation', item.id)
+      await loadCollections()
       if (selectedItem?.id === item.id) {
-        setSelectedItem(null);
+        setSelectedItem(null)
       }
-      toast({ title: "Deleted", description: `${item.title} has been deleted.` });
+      toast({ title: 'Deleted', description: `${item.title} has been deleted.` })
     }
-  };
+  }
 
   const handleCreateSuccess = () => {
-    setIsAddDialogOpen(false);
-    loadCollections();
-    toast({ title: "Success", description: "Item created successfully." });
-  };
+    setIsAddDialogOpen(false)
+    loadCollections()
+    toast({ title: 'Success', description: 'Item created successfully.' })
+  }
 
   const handleUpdateSuccess = () => {
-    loadCollections();
-    toast({ title: "Success", description: "Item updated successfully." });
-  };
+    loadCollections()
+    toast({ title: 'Success', description: 'Item updated successfully.' })
+  }
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -91,8 +89,8 @@ export function Collection() {
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <CreateItemForm 
-                type={activeTab === 'songs' ? 'song' : 'presentation'} 
+              <CreateItemForm
+                type={activeTab === 'songs' ? 'song' : 'presentation'}
                 onSuccess={handleCreateSuccess}
               />
             </DialogContent>
@@ -102,8 +100,12 @@ export function Collection() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="px-4">
             <TabsList className="w-full">
-              <TabsTrigger value="songs" className="flex-1">Songs</TabsTrigger>
-              <TabsTrigger value="presentations" className="flex-1">Presentations</TabsTrigger>
+              <TabsTrigger value="songs" className="flex-1">
+                Songs
+              </TabsTrigger>
+              <TabsTrigger value="presentations" className="flex-1">
+                Presentations
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -162,8 +164,8 @@ export function Collection() {
       {/* Detail View */}
       <div className="flex-1 overflow-y-auto">
         {selectedItem ? (
-          <CollectionDetail 
-            item={selectedItem} 
+          <CollectionDetail
+            item={selectedItem}
             onDelete={() => handleDeleteItem(selectedItem)}
             onUpdate={handleUpdateSuccess}
           />
@@ -175,7 +177,7 @@ export function Collection() {
         )}
       </div>
     </div>
-  );
+  )
 }
 
-export default Collection;
+export default Collection

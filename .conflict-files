@@ -1,3 +1,3 @@
-ancestorEntries = ["pnpm-lock.yaml", "src/renderer/src/components/collection/collection-detail.tsx"]
-ourEntries = ["pnpm-lock.yaml", "src/renderer/src/components/collection/collection-detail.tsx"]
-theirEntries = ["pnpm-lock.yaml", "src/renderer/src/components/collection/collection-detail.tsx"]
+ancestorEntries = ["src/renderer/src/components/collection/collection-detail.tsx"]
+ourEntries = ["src/renderer/src/components/collection/collection-detail.tsx"]
+theirEntries = ["src/renderer/src/components/collection/collection-detail.tsx"]

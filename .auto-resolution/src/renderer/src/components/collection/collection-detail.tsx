@@ -10,6 +10,8 @@ import { PresentationEditor } from './presentation-editor';
 import { ServiceItem, SongItem, PresentationItem, PreviewSettings } from '@/types/service';
 import { useDatabase } from '@/hooks/use-database';
 import { useServiceStore } from '@renderer/store/useServiceStore';
+import { useMobile } from '@/hooks/use-mobile'
+import { cn } from '@/lib/utils'
 
 interface CollectionDetailProps {
   item: ServiceItem
@@ -19,8 +21,10 @@ interface CollectionDetailProps {
 
 export function CollectionDetail({ item, onDelete, onUpdate }: CollectionDetailProps) {
   const [editedItem, setEditedItem] = useState<ServiceItem>(JSON.parse(JSON.stringify(item)))
+  const [isMetadataExpanded, setIsMetadataExpanded] = useState(true)
   const { saveItem, saveResult } = useDatabase()
   const { refreshCurrentService } = useServiceStore()
+  const { isMobile } = useMobile()
 
   useEffect(() => {
     setEditedItem(JSON.parse(JSON.stringify(item)))
@@ -64,16 +68,22 @@ export function CollectionDetail({ item, onDelete, onUpdate }: CollectionDetailP
     }));
   };
 
+  const toggleMetadata = () => {
+    setIsMetadataExpanded(!isMetadataExpanded)
+  }
+
   return (
-    <Card className="border-0 rounded-none h-full">
-      <CardHeader className="pb-3 flex flex-row items-center justify-between">
+    <Card className="border-0 rounded-none h-full flex flex-col">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between sticky top-0 bg-background z-10 border-b">
         <div className="flex items-center gap-2">
           {editedItem.type === 'song' ? (
             <Music className="h-5 w-5 text-primary" />
           ) : (
             <FileText className="h-5 w-5 text-primary" />
           )}
-          <CardTitle>{editedItem.type === 'song' ? 'Song' : 'Presentation'} Details</CardTitle>
+          <CardTitle className="text-lg truncate max-w-[400px]">
+            {editedItem.title || 'Untitled'}
+          </CardTitle>
         </div>
         <div className="flex gap-2">
           <Button variant="destructive" size="sm" onClick={onDelete}>
@@ -87,30 +97,50 @@ export function CollectionDetail({ item, onDelete, onUpdate }: CollectionDetailP
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            value={editedItem.title}
-            onChange={(e) => updateField('title', e.target.value)}
-            placeholder="Enter title"
-          />
+      <CardContent className="flex-1 overflow-y-auto p-0">
+        <div
+          className={cn(
+            'bg-muted/20 transition-all duration-300 overflow-hidden',
+            isMetadataExpanded ? 'max-h-[200px]' : 'max-h-[40px]'
+          )}
+        >
+          <div className="p-4 flex flex-row items-center cursor-pointer" onClick={toggleMetadata}>
+            <ChevronLeft
+              className={cn(
+                'h-4 w-4 mr-2 transition-transform',
+                isMetadataExpanded ? 'rotate-90' : 'rotate-0'
+              )}
+            />
+            <p className="text-sm font-medium">Item Metadata</p>
+          </div>
+
+          {isMetadataExpanded && (
+            <div className="px-4 pb-4 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  value={editedItem.title}
+                  onChange={(e) => updateField('title', e.target.value)}
+                  placeholder="Enter title"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes</Label>
+                <Textarea
+                  id="notes"
+                  value={editedItem.notes}
+                  onChange={(e) => updateField('notes', e.target.value)}
+                  placeholder="Add notes..."
+                  rows={4}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="notes">Notes</Label>
-          <Textarea
-            id="notes"
-            value={editedItem.notes}
-            onChange={(e) => updateField('notes', e.target.value)}
-            placeholder="Add notes..."
-            rows={4}
-          />
-        </div>
-
-        <div className="pt-4">
-          <Label>Content</Label>
+        <div className="p-4">
           {editedItem.type === 'song' ? (
             <SongEditor
               content={(editedItem as SongItem).content}

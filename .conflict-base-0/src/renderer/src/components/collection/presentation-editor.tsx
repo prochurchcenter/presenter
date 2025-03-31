@@ -7,7 +7,13 @@ import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash, FileText, Image as ImageIcon } from 'lucide-react';
+import { GripVertical, Trash, FileText, Image as ImageIcon, Settings, Video, Volume2, VolumeX, CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PreviewSettingsForm } from '@/components/preview/preview-settings-form';
+import { PreviewSettings } from '@/types/service';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 
 interface SlideProps {
   slide: any;
@@ -24,6 +30,28 @@ function Slide({ slide, index, onChange, onRemove }: SlideProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition
+  };
+
+  const handleVideoSelect = async () => {
+    if (window.electron) {
+      try {
+        const filePath = await window.electron.ipcRenderer.invoke('select-video-file');
+        onChange(index, 'videoUrl', filePath);
+      } catch (err) {
+        console.error("Error selecting video:", err);
+      }
+    }
+  };
+
+  const handleImageSelect = async () => {
+    if (window.electron) {
+      try {
+        const filePath = await window.electron.ipcRenderer.invoke('select-image-file');
+        onChange(index, 'imageUrl', filePath);
+      } catch (err) {
+        console.error("Error selecting image:", err);
+      }
+    }
   };
 
   return (
@@ -44,8 +72,10 @@ function Slide({ slide, index, onChange, onRemove }: SlideProps) {
         <div className="flex items-center">
           {slide.type === 'content' ? (
             <FileText className="h-4 w-4 mr-2" />
-          ) : (
+          ) : slide.type === 'image' ? (
             <ImageIcon className="h-4 w-4 mr-2" />
+          ) : (
+            <Video className="h-4 w-4 mr-2" />
           )}
           <span>Slide {index + 1}</span>
         </div>
@@ -53,13 +83,15 @@ function Slide({ slide, index, onChange, onRemove }: SlideProps) {
         <Select 
           value={slide.type} 
           onValueChange={(value) => onChange(index, 'type', value)}
+          className="ml-2"
         >
-          <SelectTrigger>
+          <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="content">Text</SelectItem>
             <SelectItem value="image">Image</SelectItem>
+            <SelectItem value="video">Video</SelectItem>
           </SelectContent>
         </Select>
 
@@ -83,24 +115,34 @@ function Slide({ slide, index, onChange, onRemove }: SlideProps) {
             rows={4}
             className="resize-none focus-visible:ring-0"
           />
-        ) : (
+        ) : slide.type === 'image' ? (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor={`image-url-${index}`}>Image URL</Label>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <Label htmlFor={`image-url-${index}`}>Image Source</Label>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleImageSelect}
+                >
+                  Browse...
+                </Button>
+              </div>
               <Input
                 id={`image-url-${index}`}
                 value={slide.imageUrl || ''}
                 onChange={(e) => onChange(index, 'imageUrl', e.target.value)}
-                placeholder="Enter image URL"
+                placeholder="Enter image URL or select file"
               />
             </div>
             <div>
-              <Label htmlFor={`caption-${index}`}>Caption</Label>
+              <Label htmlFor={`caption-${index}`}>Caption (optional)</Label>
               <Textarea
                 id={`caption-${index}`}
                 value={slide.content || ''}
                 onChange={(e) => onChange(index, 'content', e.target.value)}
-                placeholder="Enter image caption (optional)"
+                placeholder="Enter image caption"
                 rows={2}
                 className="resize-none focus-visible:ring-0"
               />
@@ -118,7 +160,88 @@ function Slide({ slide, index, onChange, onRemove }: SlideProps) {
               </div>
             )}
           </div>
-        )}
+        ) : slide.type === 'video' ? (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <Label htmlFor={`video-url-${index}`}>Video Source</Label>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleVideoSelect}
+                >
+                  Browse...
+                </Button>
+              </div>
+              <Input
+                id={`video-url-${index}`}
+                value={slide.videoUrl || ''}
+                onChange={(e) => onChange(index, 'videoUrl', e.target.value)}
+                placeholder="Enter video URL or select file"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Playback Speed: {slide.videoSpeed || 1}x</Label>
+                <Slider 
+                  min={0.5} 
+                  max={2} 
+                  step={0.1} 
+                  value={[slide.videoSpeed || 1]} 
+                  onValueChange={([val]) => onChange(index, 'videoSpeed', val)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Audio</Label>
+                <div className="flex items-center space-x-2 pt-2">
+                  <Switch 
+                    checked={slide.videoMuted || false} 
+                    onCheckedChange={(checked) => onChange(index, 'videoMuted', checked)}
+                  />
+                  <span className="flex items-center">
+                    {slide.videoMuted ? (
+                      <>
+                        <VolumeX className="h-4 w-4 mr-1" />
+                        <span>Muted</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="h-4 w-4 mr-1" />
+                        <span>Sound On</span>
+                      </>
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor={`caption-${index}`}>Caption/Overlay Text (optional)</Label>
+              <Textarea
+                id={`caption-${index}`}
+                value={slide.content || ''}
+                onChange={(e) => onChange(index, 'content', e.target.value)}
+                placeholder="Enter optional overlay text"
+                rows={2}
+                className="resize-none focus-visible:ring-0"
+              />
+            </div>
+            
+            {slide.videoUrl && (
+              <div className="mt-2 border rounded overflow-hidden">
+                <video 
+                  src={slide.videoUrl}
+                  controls
+                  muted
+                  className="max-h-[200px] w-full object-contain"
+                />
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -126,13 +249,23 @@ function Slide({ slide, index, onChange, onRemove }: SlideProps) {
 
 interface PresentationEditorProps {
   content: Array<
-    { type: 'content', content: string } | 
-    { type: 'image', imageUrl: string, content: string }
+    { type: 'content', content: string, index?: number } | 
+    { type: 'image', imageUrl: string, content: string, index?: number } |
+    { type: 'video', videoUrl: string, videoSpeed?: number, videoMuted?: boolean, content?: string, index?: number }
   >;
   onChange: (content: any[]) => void;
+  previewSettings?: PreviewSettings;
+  onPreviewSettingsChange?: (settings: PreviewSettings) => void;
 }
 
-export function PresentationEditor({ content, onChange }: PresentationEditorProps) {
+export function PresentationEditor({ 
+  content, 
+  onChange, 
+  previewSettings, 
+  onPreviewSettingsChange 
+}: PresentationEditorProps) {
+  const [activeTab, setActiveTab] = useState<string>("slides");
+  
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -151,10 +284,22 @@ export function PresentationEditor({ content, onChange }: PresentationEditorProp
     onChange(updatedContent);
   };
 
-  const addSlide = (type: 'content' | 'image') => {
-    const newSlide = type === 'content'
-      ? { type: 'content', content: '' }
-      : { type: 'image', imageUrl: '', content: '' };
+  const addSlide = (type: 'content' | 'image' | 'video') => {
+    const newSlide = 
+      type === 'content' ? { 
+        type: 'content', 
+        content: '' 
+      } : type === 'image' ? { 
+        type: 'image', 
+        imageUrl: '', 
+        content: '' 
+      } : { 
+        type: 'video',
+        videoUrl: '',
+        videoSpeed: 1,
+        videoMuted: false,
+        content: ''
+      };
     
     onChange([...content, newSlide]);
   };
@@ -180,48 +325,86 @@ export function PresentationEditor({ content, onChange }: PresentationEditorProp
     }
   };
 
+  const handlePreviewSettingsChange = (settings: PreviewSettings) => {
+    if (onPreviewSettingsChange) {
+      onPreviewSettingsChange(settings);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-        modifiers={[restrictToVerticalAxis]}
-      >
-        <SortableContext
-          items={content.map((_, index) => index)}
-          strategy={verticalListSortingStrategy}
-        >
-          {content.map((slide, index) => (
-            <Slide
-              key={index}
-              slide={slide}
-              index={index}
-              onChange={updateSlide}
-              onRemove={removeSlide}
-            />
-          ))}
-        </SortableContext>
-      </DndContext>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-2 mb-4">
+          <TabsTrigger value="slides" className="text-sm">
+            <FileText className="h-4 w-4 mr-2" />
+            Slides
+          </TabsTrigger>
+          <TabsTrigger value="preview" className="text-sm">
+            <Settings className="h-4 w-4 mr-2" />
+            Preview Settings
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="slides" className="space-y-4">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToVerticalAxis]}
+          >
+            <SortableContext
+              items={content.map((_, index) => index)}
+              strategy={verticalListSortingStrategy}
+            >
+              {content.map((slide, index) => (
+                <Slide
+                  key={index}
+                  slide={slide}
+                  index={index}
+                  onChange={updateSlide}
+                  onRemove={removeSlide}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
 
-      <div className="flex gap-2">
-        <Button 
-          onClick={() => addSlide('content')}
-          variant="outline"
-          className="flex-1"
-        >
-          <FileText className="h-4 w-4 mr-2" />
-          Add Text Slide
-        </Button>
-        <Button 
-          onClick={() => addSlide('image')}
-          variant="outline"
-          className="flex-1"
-        >
-          <ImageIcon className="h-4 w-4 mr-2" />
-          Add Image Slide
-        </Button>
-      </div>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => addSlide('content')}
+              variant="outline"
+              className="flex-1"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Add Text Slide
+            </Button>
+            <Button 
+              onClick={() => addSlide('image')}
+              variant="outline"
+              className="flex-1"
+            >
+              <ImageIcon className="h-4 w-4 mr-2" />
+              Add Image Slide
+            </Button>
+            <Button 
+              onClick={() => addSlide('video')}
+              variant="outline"
+              className="flex-1"
+            >
+              <Video className="h-4 w-4 mr-2" />
+              Add Video Slide
+            </Button>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="preview" className="space-y-4">
+          {previewSettings && onPreviewSettingsChange && (
+            <PreviewSettingsForm
+              initialSettings={previewSettings}
+              onChange={handlePreviewSettingsChange}
+            />
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

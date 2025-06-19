@@ -282,6 +282,10 @@ export function Setlist() {
             </Button>
           </DialogTrigger>
           <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Service</DialogTitle>
+              <DialogDescription>Add a new service with a name and date.</DialogDescription>
+            </DialogHeader>
             <NewServiceForm
               onSubmit={handleCreateService}
               onCancel={() => setShowNewServiceDialog(false)}
@@ -338,6 +342,12 @@ export function Setlist() {
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-4xl">
+                      <DialogHeader>
+                        <DialogTitle>Add Item to Service</DialogTitle>
+                        <DialogDescription>
+                          Select songs or presentations to add to your service.
+                        </DialogDescription>
+                      </DialogHeader>
                       <AddItemForm
                         collections={collections}
                         onAddItem={handleAddItemToService}
@@ -402,11 +412,6 @@ function NewServiceForm({ onSubmit, onCancel }: NewServiceFormProps) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <DialogHeader>
-        <DialogTitle>Create New Service</DialogTitle>
-        <DialogDescription>Add a new service with a name and date.</DialogDescription>
-      </DialogHeader>
-
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
           <Label htmlFor="name">Service Name</Label>
@@ -615,15 +620,6 @@ function AddItemForm({ collections, onAddItem, onCancel }: AddItemFormProps) {
 
   return (
     <div>
-      <DialogHeader>
-        <DialogTitle>Add Item to Service</DialogTitle>
-        <DialogDescription>
-          {formStep === 'select'
-            ? 'Select songs or presentations to add to your service.'
-            : 'Customize preview settings for this item.'}
-        </DialogDescription>
-      </DialogHeader>
-
       {formStep === 'select' ? (
         <div className="py-4">
           <div className="flex border-b mb-4">

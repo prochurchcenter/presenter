@@ -1,3 +1,0 @@
-ancestorEntries = ["src/renderer/src/components/collection/collection-detail.tsx"]
-ourEntries = ["src/renderer/src/components/collection/collection-detail.tsx"]
-theirEntries = ["src/renderer/src/components/collection/collection-detail.tsx"]

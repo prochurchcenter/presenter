@@ -1,46 +1,16 @@
-<<<<<<< ours
-import { useState, useEffect } from 'react'
-import { Trash, Save, Music, FileText, ChevronLeft } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { SongEditor } from './song-editor'
-import { PresentationEditor } from './presentation-editor'
-import { EnhancedPresentationEditor } from './presentation/enhanced-presentation-editor'
-import { ServiceItem, SongItem, PresentationItem, PreviewSettings } from '@/types/service'
-import { useDatabase } from '@/hooks/use-database'
-import { useServiceStore } from '@renderer/store/useServiceStore'
-||||||| ancestor
-import { useState, useEffect } from 'react'
-import { Trash, Save, Music, FileText, ChevronLeft } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { SongEditor } from './song-editor'
-import { PresentationEditor } from './presentation-editor'
-import { ServiceItem, SongItem, PresentationItem, PreviewSettings } from '@/types/service'
-import { useDatabase } from '@/hooks/use-database'
-import { useServiceStore } from '@renderer/store/useServiceStore'
-=======
-import { useState, useEffect } from 'react';
-import { Trash, Save, Music, FileText } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { SongEditor } from './song-editor';
-import { PresentationEditor } from './presentation-editor';
-import { ServiceItem, SongItem, PresentationItem, PreviewSettings } from '@/types/service';
+import { Textarea } from '@/components/ui/textarea';
 import { useDatabase } from '@/hooks/use-database';
-import { useServiceStore } from '@renderer/store/useServiceStore';
->>>>>>> theirs
 import { useMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
+import { PresentationItem, PreviewSettings, ServiceItem, SongItem } from '@/types/service'
+import { useServiceStore } from '@renderer/store/useServiceStore';
+import { FileText, Music, Save, Trash } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { SongEditor } from './song-editor'
 
 interface CollectionDetailProps {
   item: ServiceItem
@@ -89,13 +59,6 @@ export function CollectionDetail({ item, onDelete, onUpdate }: CollectionDetailP
       previewSettings: settings
     }))
   }
-
-  const updatePreviewSettings = (settings: PreviewSettings) => {
-    setEditedItem(prev => ({
-      ...prev,
-      previewSettings: settings
-    }));
-  };
 
   const toggleMetadata = () => {
     setIsMetadataExpanded(!isMetadataExpanded)
